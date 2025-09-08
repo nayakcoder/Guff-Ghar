@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
-import { useUIStore } from '@/lib/store'
+import { useUIStore, useAuthStore } from '@/lib/store'
 
 export function Providers({ children }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -25,6 +25,12 @@ export function Providers({ children }) {
   }))
 
   const theme = useUIStore((state) => state.theme)
+
+  // Handle Zustand hydration
+  useEffect(() => {
+    useUIStore.persist.rehydrate()
+    useAuthStore.persist.rehydrate()
+  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

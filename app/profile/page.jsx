@@ -8,6 +8,9 @@ import { Settings, Edit, Share, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toaster'
 
+// Force dynamic rendering to prevent SSR issues
+export const dynamic = 'force-dynamic'
+
 export default function ProfilePage() {
   const { user, logout } = useAuthStore((state) => ({ user: state.user, logout: state.logout }))
   const router = useRouter()

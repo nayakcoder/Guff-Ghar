@@ -10,6 +10,9 @@ import { useToast } from '@/components/ui/toaster'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Image, Smile, Hash } from 'lucide-react'
 
+// Force dynamic rendering to prevent SSR issues
+export const dynamic = 'force-dynamic'
+
 export default function CreatePage() {
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)

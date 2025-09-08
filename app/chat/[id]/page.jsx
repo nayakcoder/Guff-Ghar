@@ -7,11 +7,13 @@ import { EmptyState } from '@/components/empty-state'
 import { useUIStore } from '@/lib/store'
 import { translations } from '@/lib/i18n'
 import { MessageCircle } from 'lucide-react'
+import { useRetry } from '@/lib/hooks/use-retry'
 
 export default function ChatPage({ params }) {
   const { id: chatId } = params
   const language = useUIStore((state) => state.language)
   const t = translations[language]
+  const { retryQuery } = useRetry()
   
   const { data: chat, isLoading, error } = useChatQuery(chatId)
 
@@ -28,7 +30,7 @@ export default function ChatPage({ params }) {
           <EmptyState
             title={t.error}
             description="Failed to load chat"
-            action={{ label: t.retry, onClick: () => window.location.reload() }}
+            action={{ label: t.retry, onClick: () => retryQuery(['chat', chatId]) }}
           />
         )}
 

@@ -5,6 +5,7 @@ import { useAuthStore, useUIStore } from '@/lib/store'
 import { usePostsQuery } from '@/lib/hooks/use-posts'
 import { useChatsQuery } from '@/lib/hooks/use-chat'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 export default function DebugPage() {
   const [apiTests, setApiTests] = useState({})
@@ -12,6 +13,7 @@ export default function DebugPage() {
   const ui = useUIStore()
   const postsQuery = usePostsQuery()
   const chatsQuery = useChatsQuery()
+  const router = useRouter()
 
   const testApiEndpoint = async (name, url) => {
     try {
@@ -130,11 +132,11 @@ export default function DebugPage() {
       <div className="bg-gray-900 rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
         <div className="space-x-4">
-          <Button onClick={() => window.location.href = '/feed'}>Go to Feed</Button>
-          <Button onClick={() => window.location.href = '/auth'}>Go to Auth</Button>
-          <Button onClick={() => window.location.href = '/profile'}>Go to Profile</Button>
-          <Button onClick={() => window.location.href = '/chat'}>Go to Chat</Button>
-          <Button onClick={() => window.location.href = '/create'}>Go to Create</Button>
+          <Button onClick={() => router.push('/feed')}>Go to Feed</Button>
+          <Button onClick={() => router.push('/auth')}>Go to Auth</Button>
+          <Button onClick={() => router.push('/profile')}>Go to Profile</Button>
+          <Button onClick={() => router.push('/chat')}>Go to Chat</Button>
+          <Button onClick={() => router.push('/create')}>Go to Create</Button>
         </div>
       </div>
     </div>

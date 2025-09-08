@@ -32,7 +32,7 @@ export function FriendsList() {
       <EmptyState
         title={t.error}
         description="Failed to load friends"
-        action={{ label: t.retry, onClick: () => window.location.reload() }}
+        action={{ label: t.retry, onClick: () => retryQuery(['friends']) }}
       />
     )
   }
