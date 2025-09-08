@@ -1,0 +1,306 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  displayName   String?  @map("display_name")
+  bio           String?
+  avatarUrl     String?  @map("avatar_url")
+  coverUrl      String?  @map("cover_url")
+  location      String?
+  website       String?
+  verified      Boolean  @default(false)
+  private       Boolean  @default(false)
+  birthDate     DateTime? @map("birth_date")
+  hashedPassword String  @map("hashed_password")
+  
+  // Social counts
+  followersCount Int @default(0) @map("followers_count")
+  followingCount Int @default(0) @map("following_count")
+  postsCount     Int @default(0) @map("posts_count")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  lastActive DateTime @default(now()) @map("last_active")
+  
+  // Relations
+  posts         Post[]
+  likes         Like[]
+  comments      Comment[]
+  followers     Follow[] @relation("UserFollowers")
+  following     Follow[] @relation("UserFollowing")
+  
+  // Messages
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  
+  // Chat participants
+  chatParticipants ChatParticipant[]
+  
+  // Friend requests
+  sentFriendRequests     FriendRequest[] @relation("FriendRequestSender")
+  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
+  
+  // Notifications
+  sentNotifications     Notification[] @relation("NotificationSender")
+  receivedNotifications Notification[] @relation("NotificationReceiver")
+  
+  // Sessions and auth
+  sessions Session[]
+  
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String?
+  mediaUrls String[] @map("media_urls")
+  mediaTypes String[] @map("media_types")
+  
+  // Engagement
+  likesCount    Int @default(0) @map("likes_count")
+  commentsCount Int @default(0) @map("comments_count")
+  sharesCount   Int @default(0) @map("shares_count")
+  
+  // Metadata
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  authorId String @map("author_id")
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  likes    Like[]
+  comments Comment[]
+  
+  // Parent post for reposts/quotes
+  parentId String? @map("parent_id")
+  parent   Post?   @relation("PostReplies", fields: [parentId], references: [id])
+  replies  Post[]  @relation("PostReplies")
+  
+  @@map("posts")
+}
+
+model Like {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  postId String @map("post_id")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, postId])
+  @@map("likes")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  authorId String @map("author_id")
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  postId String @map("post_id")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  // Nested comments
+  parentId String?    @map("parent_id")
+  parent   Comment?   @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[]  @relation("CommentReplies")
+  
+  @@map("comments")
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String @map("follower_id")
+  followingId String @map("following_id")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  name      String?
+  isGroup   Boolean  @default(false) @map("is_group")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  participants ChatParticipant[]
+  messages     Message[]
+  
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id     String @id @default(cuid())
+  chatId String @map("chat_id")
+  userId String @map("user_id")
+  
+  joinedAt  DateTime  @default(now()) @map("joined_at")
+  leftAt    DateTime? @map("left_at")
+  isAdmin   Boolean   @default(false) @map("is_admin")
+  
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([chatId, userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id       String      @id @default(cuid())
+  content  String?
+  type     MessageType @default(TEXT)
+  mediaUrl String?     @map("media_url")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  readAt    DateTime? @map("read_at")
+  
+  // Relations
+  senderId   String @map("sender_id")
+  receiverId String @map("receiver_id")
+  chatId     String @map("chat_id")
+  
+  sender   User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  chat     Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  // Reply to message
+  replyToId String?  @map("reply_to_id")
+  replyTo   Message? @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies   Message[] @relation("MessageReplies")
+  
+  @@map("messages")
+}
+
+model FriendRequest {
+  id         String            @id @default(cuid())
+  senderId   String            @map("sender_id")
+  receiverId String            @map("receiver_id")
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+  
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  type       NotificationType
+  title      String
+  content    String
+  read       Boolean          @default(false)
+  createdAt  DateTime         @default(now()) @map("created_at")
+  
+  senderId   String? @map("sender_id")
+  receiverId String  @map("receiver_id")
+  
+  sender   User? @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+  receiver User  @relation("NotificationReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  // Related entities
+  postId    String? @map("post_id")
+  commentId String? @map("comment_id")
+  
+  @@map("notifications")
+}
+
+model CallSession {
+  id         String    @id @default(cuid())
+  callerId   String    @map("caller_id")
+  receiverId String    @map("receiver_id")
+  type       CallType  @default(AUDIO)
+  status     CallStatus @default(PENDING)
+  
+  startedAt  DateTime? @map("started_at")
+  endedAt    DateTime? @map("ended_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  
+  // WebRTC signaling data
+  offer      String?
+  answer     String?
+  candidates String[] // ICE candidates
+  
+  @@map("call_sessions")
+}
+
+// Enums
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  CALL_START
+  CALL_END
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  FRIEND_REQUEST
+  MESSAGE
+  CALL
+  POST_MENTION
+}
+
+enum CallType {
+  AUDIO
+  VIDEO
+}
+
+enum CallStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  ENDED
+  MISSED
+}
