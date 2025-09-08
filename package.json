@@ -18,6 +18,7 @@
     "db:seed": "node prisma/seed.js",
     "db:setup": "node scripts/setup-database.js",
     "validate-env": "node scripts/validate-env.js",
+    "mobile-test": "node scripts/mobile-test.js",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate && next build"
   },
