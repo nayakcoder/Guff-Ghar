@@ -70,7 +70,7 @@ A modern Nepali social media platform built with Next.js 14, featuring real-time
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/nayakcoder/guff-ghar.git
+   git clone https://github.com/nayakcoder/Guff-Ghar.git
    cd guff-ghar
    ```
 
@@ -288,7 +288,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - 📧 Email: support@guffghar.com
 - 💬 Discord: [Join our community](https://discord.gg/guffghar)
-- 🐛 Issues: [GitHub Issues](https://github.com/nayakcoder/guff-ghar/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/nayakcoder/Guff-Ghar/issues)
 
 ---
 
